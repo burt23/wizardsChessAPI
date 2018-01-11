@@ -1,12 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { resolve } = require('path');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
 
 const models = require('../db/models.js');
 
 const port = process.env.PORT || 3001
 
 const app = express();
+
+const options = {
+  key: fs.readFileSync('/etc/letsencrypt/live/wizardschess.club/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/wizardschess.club/cert.pem'),
+  ca: fs.readFileSync('/etc/letsencrypt/live/wizardschess.club/chain.pem') 
+};
+
 
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -17,6 +27,11 @@ app.get('/rooms/:name', (req, res) => {
 	let Room = models.Room
 	Room.find().byName(req.params.id)
 	.then((doc) => console.log(doc))
+})
+
+app.get('/.well-known/acme-challenge/zpYoCjpQwKdhK3L_5iLLoKyJcXc4AotZGG9ALy7jpKA', (req, res) => {
+  const answer = 'zpYoCjpQwKdhK3L_5iLLoKyJcXc4AotZGG9ALy7jpKA.qgUDJGZFDeLX2UcTcBgNs74XXt0DX7aAuSK-yIFaCaE';
+  res.send(answer);
 })
 
 app.post('/rooms', (req, res) => {
@@ -40,8 +55,11 @@ app.get('*', (req, res) => {
 	res.redirect('/');
 })
 
-app.listen(port, () => {
-  console.log('App is listening to port ' + port);
-})
+//app.listen(port, () => {
+//  console.log('App is listening to port ' + port);
+//})
+//
+// http.createServer(app).listen(3000);
+https.createServer(options, app).listen(3443);
 
 module.exports = app;
