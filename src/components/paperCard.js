@@ -2,8 +2,6 @@ import React from 'react';
 import TextField from 'material-ui/TextField'
 
 const style = {
-  // width: '100vh',
-  // height: '100%',
   textAlign: 'center',
   display: 'inline-block',
   fontSize: '2em'

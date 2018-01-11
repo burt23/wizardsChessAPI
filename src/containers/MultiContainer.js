@@ -24,13 +24,13 @@ class MultiContainer extends Component {
 	  	    <h2>Wizards Chess</h2>
 	  	  </div>
 	      <h1>Multi Player</h1>
-	      <MultiplayerHeader 
+	      <MultiplayerHeader
 	        type='Host'
 	        value={this.state.roomName}
 	        message='Create a gameroom and challenge opponents in public and private matches'
 	        handleChange={this.handleChange}
 	      />
-	      <MultiplayerHeader 
+	      <MultiplayerHeader
 	        type='Join'
 	        value='Enter Room'
 	        message='Join a currently open gameroom to challenge or observe'

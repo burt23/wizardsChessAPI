@@ -25,9 +25,6 @@ function fireRockets(rocketBundle, windowHeight, windowWidth) {
 		tl.to(rocket, .5, {opacity: 0}, "disappear" + i)
 	}
 
-	console.log(tl)
-	
-
 	function getRadius() {
 		return 1/6*windowWidth + Math.random()*1/7*windowWidth;
 	}

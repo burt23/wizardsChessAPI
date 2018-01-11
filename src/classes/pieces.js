@@ -287,7 +287,6 @@ class King extends Piece {
 				x: 2,
 				y: backRowPosition
 			})
-			console.log(moveset)
 		}
 		return moveset
 	}
@@ -321,8 +320,6 @@ class King extends Piece {
 					let queenPosition = { x: 3, y: backRowPosition }
 					let bishopPosition = { x: 2, y: backRowPosition }
 					let knightPosition = { x: 1, y: backRowPosition }
-					console.log(!board.getPieceAtLocation(bishopPosition.x, bishopPosition.y) &&
-											!board.getPieceAtLocation(knightPosition.x, knightPosition.y))
 					if (!board.getPieceAtLocation(queenPosition.x, queenPosition.y) &&
 							!board.getPieceAtLocation(bishopPosition.x, bishopPosition.y) &&
 							!board.getPieceAtLocation(knightPosition.x, knightPosition.y)) {

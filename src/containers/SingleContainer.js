@@ -79,8 +79,8 @@ class SingleContainer extends Component {
     background: 'red'
   };
     return(
-      <div>
-        <div>
+      <div className="singleContainer">
+        <div className="startGameHeader">
           <Link to='/'>
             <h1 className="App-header">Wizards Chess</h1>
           </Link>

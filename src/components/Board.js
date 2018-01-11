@@ -9,11 +9,9 @@ import Square from './Square.js'
 import Algebra from './Algebra.js'
 import Hud from '../components/Hud.js'
 import GameOver from '../components/GameOver.js'
-import rockets from '../public/rockets.svg'
 
 import chessBoard from '../classes/board.js'
 import ai from '../classes/ai.js'
-import Vector from '../classes/math.js'
 import fireRockets from '../classes/rockets.js'
 
 class Board extends Component {
@@ -30,7 +28,6 @@ class Board extends Component {
     this.toggleActive = this.toggleActive.bind(this)
     this.setActiveSquare = this.setActiveSquare.bind(this)
     this.executeCommand = this.executeCommand.bind(this)
-    this.startOver = this.startOver.bind(this)
   }
 
   componentDidMount() {
@@ -40,7 +37,7 @@ class Board extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.board.isCheck(this.props.turn)) {
       if (this.props.board.isCheckmate(this.props.turn)) {
-        this.message.textContent = "Checkmate!!!";
+        this.props.actions.updateMessage("Checkmate!!!");
         this.props.actions.updateGameState({
           board: this.props.board,
           turn: this.props.turn,
@@ -53,39 +50,27 @@ class Board extends Component {
         if (this.props.turn !== "black") {
           return
         }
-      }  
+      }
 
       let rockets = this.refs.svg.contentDocument.querySelectorAll('.rockets')
       let { innerHeight, innerWidth } = window
       fireRockets(rockets, innerHeight, innerWidth)
-      
+
       return
       }
-        this.message.textContent = "Check.";
+        this.props.actions.updateMessage("Check.");
     }
 
     this.props.board.updateAvailableMoves(this.props.turn)
 
-    if (this.props.turn === "black" && 
+    if (this.props.turn === "black" &&
       prevProps.turn === "white" &&
       this.props.gameMode === "single") {
       setTimeout(function() {
         let aiMove = ai.getBestMove(this.props.board, 2);
-        this.move(aiMove.piece, aiMove.destination);  
-      }.bind(this), 1500)     
-    } 
-  }
-
-  startOver() {
-    const board = new chessBoard()
-    board.init()
-    this.props.actions.updateGameState({
-      board: board,
-      turn: "white",
-      lastMove: null,
-      turnCount: 1,
-      playing: true
-    })
+        this.move(aiMove.piece, aiMove.destination);
+      }.bind(this), 1500)
+    }
   }
 
   toggleActive(square) {
@@ -110,7 +95,7 @@ class Board extends Component {
       }
     }
   }
-    
+
   setActiveSquare(square) {
     this.setState({
       activeSquare: square,
@@ -169,10 +154,10 @@ class Board extends Component {
     if (validTargets.length === 1) {
       return this.move(validTargets[0], destination)
     } else if (validTargets.length === 0) {
-      this.message.textContent = "That command is not associated with any available moves.";
+      this.props.actions.updateMessage("That command is not associated with any available moves.");
       return false
     } else {
-      this.message.textContent = "That command is associated with multiple targets. Please move manually for now.";
+      this.props.actions.updateMessage("That command is associated with multiple targets. Please move manually for now.");
       return false
     }
   }
@@ -182,81 +167,50 @@ class Board extends Component {
     if (this.props.board.destinationInMoveset(destination, moveset)) {
 
       if (this.props.board.movingIntoCheck(piece, destination, this.props.turn)) {
-        this.message.textContent = "Can't move into check";
+        this.props.actions.updateMessage("Can't move into check");
         return false
       }
 
-      if (this.isCastle(piece, destination)) {
-        this.handleCastle(piece, destination);
-        return;
-      }
-
-      this.props.board.move(piece, destination) 
+      this.props.board.move(piece, destination)
 
       piece.hasMoved = true;
 
       this.setActiveSquare(null)
       this.clearTargetSquares()
 
-      this.message.textContent = ""
+      this.props.actions.updateMessage("")
 
       this.props.actions.updateGameState({
         board: this.props.board,
         turn: this.props.turn === "white" ? "black" : "white",
         lastMove: [piece, destination],
         turnCount: this.props.turn === "black" ? this.props.turnCount + 1 : this.props.turnCount,
-        playing: true
+        playing: true,
       })
 
-      return true 
+      return true
     }
     else {
-      this.message.textContent = "Not a valid move.";
+      this.props.actions.updateMessage("Not a valid move.");
       this.setActiveSquare(null)
+      this.clearTargetSquares()
       return false
     }
-
-
   }
 
-  isCastle(piece, destination) {
-    return piece.type === "king" && Math.abs(Vector.subtract(destination, piece.pos).x) === 2
-  }
-
-  handleCastle(king, destination) {
-    let backRowPosition = king.color === "white" ? 0 : 7;
-    let kingSideCastle = destination.x === 6 ? true : false;
-    let rookPosition = {
-      x: kingSideCastle ? 7 : 0,
-      y: backRowPosition
-    };
-    let rook = this.props.board.getPieceAtLocation(rookPosition.x, rookPosition.y);
-    let rookDestination = {
-      x: kingSideCastle ? 5 : 3,
-      y: backRowPosition
-    };
-    this.props.board.movePieceToLocation(king, destination.x, backRowPosition);
-    this.props.board.movePieceToLocation(rook, rookDestination.x, backRowPosition);
-
-    king.hasMoved = true;
-    rook.hasMoved = true;
-
-    this.setActiveSquare(null)
-    this.clearTargetSquares()
-
-    this.message.textContent = ""
-
-    this.props.actions.updateGameState({
-        board: this.props.board,
-        turn: this.props.turn === "white" ? "black" : "white",
-        lastMove: [kingSideCastle ? "King side castle" : "Queen side castle"],
-        turnCount: this.props.turn === "black" ? this.props.turnCount + 1 : this.props.turnCount,
-        playing: true
-    })
+  startOver = () => {		
+    const board = new chessBoard()		
+    board.init()		
+    this.props.actions.updateGameState({		
+      board: board,		
+      turn: "white",		
+      lastMove: null,		
+      turnCount: 1,		
+      playing: true		
+    })		
   }
 
   render() {
-    
     var Squares = [];
     for (var i = 7; i>=-1; i--) {
       for (var j = -1; j < 8; j++) {
@@ -264,21 +218,21 @@ class Board extends Component {
           const square = <Algebra pos= {{x:j, y:i}} key={j + "," + i}/>
           Squares.push(square)
         } else {
-          const square = <Square 
-                  piece={this.props.board.getPieceAtLocation(j, i)} 
-                  toggle={this.toggleActive} 
-                  pos={{x:j, y:i}} 
-                  activeSquare={this.state.activeSquare} 
+          const square = <Square
+                  piece={this.props.board.getPieceAtLocation(j, i)}
+                  toggle={this.toggleActive}
+                  pos={{x:j, y:i}}
+                  activeSquare={this.state.activeSquare}
                   targetSquares={this.state.targetSquares}
                   attackSquares={this.state.attackSquares}
-                  key={j + "," + i} 
+                  key={j + "," + i}
                   ref={j + "," + i} />
           Squares.push(square);
         }
-        
+
       }
     }
-  
+
     return (
       <div>
         <div className="playArea">
@@ -288,16 +242,15 @@ class Board extends Component {
             </div>
           </div>
           <div className="hudWrapper">
-        <h2 ref={message=> {this.message = message }} className="message"> </h2>
-            <Hud message={this.message} executeCommand={this.executeCommand} />
+            <Hud executeCommand={this.executeCommand} />
           </div>
-        </div>
-        {!this.props.playing &&
-          <GameOver startOver={this.startOver} />
-        }
-        <div className="rockets">
-        <object data="rockets.svg" type="image/svg+xml"
-           ref="svg" width="100%" height="100%"></object> 
+          {!this.props.playing &&
+            <GameOver startOver={this.startOver} />
+          }
+          <div className="rockets">
+            <object data="rockets.svg" type="image/svg+xml"
+               ref="svg" width="100%" height="100%"></object>
+          </div>
         </div>
       </div>
     )
@@ -310,7 +263,8 @@ Board.propTypes = {
   board: PropTypes.object.isRequired,
   turn: PropTypes.oneOf(['white', 'black']).isRequired,
   turnCount: PropTypes.number.isRequired,
-  lastMove: PropTypes.array
+  lastMove: PropTypes.array,
+  message: PropTypes.string
 
 }
 
@@ -323,7 +277,8 @@ function mapStateToProps(state) {
     lastMove: state.gameState.lastMove,
     turnCount: state.gameState.turnCount,
     playing: state.gameState.playing,
-    playerColor: state.playerColor
+    playerColor: state.playerColor,
+    message: state.message
   }
 }
 

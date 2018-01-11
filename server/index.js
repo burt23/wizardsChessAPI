@@ -1,11 +1,8 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const { resolve } = require('path');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
-
-const models = require('../db/models.js');
 
 const port = process.env.PORT || 3001
 

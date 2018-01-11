@@ -33,3 +33,12 @@ export function updatePlayerColor(color = "white") {
 		payload: color
 	}
 }
+
+export const UPDATE_MESSAGE = "UPDATE_MESSAGE";
+
+export function updateMessage(message) {
+	return {
+		type: UPDATE_MESSAGE,
+		payload: message
+	}
+}
